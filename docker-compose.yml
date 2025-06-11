@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./database.db
+      - SECRET_KEY=tajny_klic_pro_vyvoj_nutno_zmenit_v_produkci
+      - FRONTEND_URL=http://localhost:3000
+    networks:
+      - app-network
+    restart: unless-stopped
+    # Použití hot-reload díky parametru --reload v CMD v Dockerfile
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+    # Hot-reload je ve výchozím nastavení povolený v React dev serveru
+
+networks:
+  app-network:
+    driver: bridge
